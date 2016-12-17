@@ -66,9 +66,6 @@
                                         "value": "/etc/secret-volume/router.pem"
                                     },
                                     {
-                                        "name": "ROUTER_EXTERNAL_HOST_USERNAME"
-                                    },
-                                    {
                                         "name": "ROUTER_SERVICE_HTTPS_PORT",
                                         "value": "443"
                                     },
