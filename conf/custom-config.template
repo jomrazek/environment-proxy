@@ -49,14 +49,25 @@ frontend public
   # Remove port from Host header
   http-request replace-header Host (.*):.* \1
 
-  use_backend %[path,lower,map_dom(/var/lib/haproxy/conf/custom_https.map,openshift_default)]
+  {{ range .}}
 
+  acl has_path_{{ .Match}} path_beg -i /{{ .Match}}
+  use_backend {{ .Match}} if has_path_{{ .Match}}
+
+  {{ end }}
+  default_backend openshift_default
 
 frontend public_ssl
   bind :443
   tcp-request  inspect-delay 5s
   tcp-request content accept if { req_ssl_hello_type 1 }
-  use_backend %[path,lower,map_dom(/var/lib/haproxy/conf/custom_https.map,openshift_default)]
+  {{ range .}}
+
+  acl has_path_{{ .Match}} path_beg -i /{{ .Match}}
+  use_backend {{ .Match}} if has_path_{{ .Match}}
+
+  {{ end }}
+  default_backend openshift_default
 
 backend openshift_default
   mode http
