@@ -5,3 +5,4 @@ Run the following command to grant permissions to the user, replacing with same 
 `sudo oadm policy add-cluster-role-to-user cluster-reader system:serviceaccount:${ENVIRONMENT_NAMESPACE}:${ENVIRONMENT_USER}`
 
 
+sudo oadm policy add-cluster-role-to-user cluster-reader system:serviceaccount:rhmap-rhmap-haproxy:rhmap-user-haproxy

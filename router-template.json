@@ -53,30 +53,13 @@
                                         "containerPort": 443
                                     },
                                     {
-                                        "name": "stats",
-                                        "containerPort": 1936,
-                                        "protocol": "TCP"
+                                        "containerPort": 443
                                     }
                                 ],
                                 "env": [
                                     {
-                                        "name": "ROUTER_EXTERNAL_HOST_HOSTNAME"
-                                    },
-                                    {
-                                        "name": "ROUTER_EXTERNAL_HOST_HTTPS_VSERVER"
-                                    },
-                                    {
-                                        "name": "ROUTER_EXTERNAL_HOST_HTTP_VSERVER"
-                                    },
-                                    {
                                         "name": "ROUTER_EXTERNAL_HOST_INSECURE",
                                         "value": "false"
-                                    },
-                                    {
-                                        "name": "ROUTER_EXTERNAL_HOST_PARTITION_PATH"
-                                    },
-                                    {
-                                        "name": "ROUTER_EXTERNAL_HOST_PASSWORD"
                                     },
                                     {
                                         "name": "ROUTER_EXTERNAL_HOST_PRIVKEY",
@@ -102,19 +85,8 @@
                                         "value": "${ENVIRONMENT_NAMESPACE}"
                                     },
                                     {
-                                        "name": "ROUTER_SUBDOMAIN"
-                                    },
-                                    {
-                                        "name": "STATS_PASSWORD",
-                                        "value": "tw6O0BsOBf"
-                                    },
-                                    {
                                         "name": "STATS_PORT",
                                         "value": "1936"
-                                    },
-                                    {
-                                        "name": "STATS_USERNAME",
-                                        "value": "admin"
                                     },
                                     {
                                         "name": "NAMESPACE_LABELS",
@@ -123,6 +95,10 @@
                                     {
                                         "name": "NAMESPACE",
                                         "value": "${ENVIRONMENT_NAMESPACE}"
+                                    },
+                                    {
+                                        "name": "TEMPLATE_FILE",
+                                        "value": "/var/lib/haproxy/conf/custom-config.template"
                                     }
                                 ],
                                 "resources": {},
@@ -176,7 +152,7 @@
                         "port": 443,
                         "targetPort": 443
                     },
-                    {
+                   {
                         "name": "1936-tcp",
                         "protocol": "TCP",
                         "port": 1936,
