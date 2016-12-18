@@ -1,5 +1,3 @@
-#!/bin/bash
-
 set -o nounset
 
 config_file=/var/lib/haproxy/conf/haproxy.config
@@ -29,12 +27,13 @@ function haproxyHealthCheck() {
 
     if [ "$httpcode" == "200" ]; then
       echo " - HAProxy port $port health check ok : $retries retry attempt(s)."
-      return 0
+      echo "HAProxy restarted successfully"
+      exit 0
     fi
 
     if [ $(date +"%s") -ge $end_ts ]; then
       echo " - Exceeded max wait time ($wait_time) in HAProxy health check - $retries retry attempt(s)."
-      return 1
+      exit 1
     fi
 
     sleep 0.5
@@ -46,12 +45,6 @@ function haproxyHealthCheck() {
 # How many times to retry removal of the iptables rules (if requested at all)
 # It will sleep for 1/2 a second between attempts, so the time is retries / 2 secs
 retries=20
-
-
-# sort the path based map files for the haproxy map_beg function
-for mapfile in "$haproxy_conf_dir"/*.map; do
-  sort -r "$mapfile" -o "$mapfile"
-done
 
 old_pids=$(ps -A -opid,args | grep haproxy | egrep -v -e 'grep|reload-haproxy' | awk '{print $1}' | tr '\n' ' ')
 

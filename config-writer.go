@@ -2,21 +2,21 @@ package main
 
 import (
   "bufio"
-  "fmt"
   "log"
   "os"
   "strings"
   "text/template"
 )
 
-type Location struct {
+type Backend struct {
   Match   string
   Service string
 }
 
 func main() {
 
-  locations := []Location{}
+  log.SetOutput(os.Stderr)
+  backends := []Backend{}
 
   file, err := os.Open("/var/lib/haproxy/conf/custom_https.map")
   if err != nil {
@@ -27,21 +27,20 @@ func main() {
   scanner := bufio.NewScanner(file)
   for scanner.Scan() {
     data := strings.Fields(scanner.Text())
-    location := Location{data[0], data[1]}
-    locations = append(locations, location)
+    backend := Backend{data[0], data[1]}
+    backends = append(backends, backend)
   }
 
   t := template.Must(template.ParseFiles(os.Getenv("TEMPLATE_FILE")))
 
   f, err := os.Create("/var/lib/haproxy/conf/haproxy.config")
   if err != nil {
-    panic(err)
+    log.Fatal(err)
   }
 
-  err = t.Execute(f, locations)
+  err = t.Execute(f, backends)
 
   if err != nil {
-    fmt.Print(err)
-    log.Fatal("Cannot write out config file")
+    log.Fatal(err)
   }
 }

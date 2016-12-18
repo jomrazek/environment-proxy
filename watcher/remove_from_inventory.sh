@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #  oc observe services -a '{ .metadata.name }' -a '{ .spec.selector.name}' \
 #		--delete ./remove_from_inventory.sh \
 #			-- ./add_to_inventory.sh
