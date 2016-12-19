@@ -11,4 +11,4 @@ COPY ./custom-config.template /var/lib/haproxy/conf/haproxy-config.template
 
 USER 1001
 
-ENTRYPOINT ["/bin/bash", "-c", "/var/lib/haproxy/watcher/start_script.sh"]
+ENTRYPOINT ["/usr/bin/openshift-router", "--loglevel=4","--namespace=myrouter"]
