@@ -14,6 +14,7 @@ RUN INSTALL_PKGS="haproxy" && \
 
 COPY . /var/lib/haproxy/
 
+
 RUN  chmod -R 777 /var && \
 	 chmod 777 /usr/bin/config-writer
 
