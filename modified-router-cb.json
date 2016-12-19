@@ -4,13 +4,44 @@
     "metadata": {},
     "objects": [
         {
+            "kind": "ServiceAccount",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "router",
+                "creationTimestamp": null
+            }
+        },
+        {
+            "kind": "ClusterRoleBinding",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "router-rhmap-rhmap-myrouter-role",
+                "creationTimestamp": null
+            },
+            "userNames": [
+                "system:serviceaccount:${ENVIRONMENT_NAMESPACE}:router"
+            ],
+            "groupNames": null,
+            "subjects": [
+                {
+                    "kind": "ServiceAccount",
+                    "namespace": "${ENVIRONMENT_NAMESPACE}",
+                    "name": "router"
+                }
+            ],
+            "roleRef": {
+                "kind": "ClusterRole",
+                "name": "system:router"
+            }
+        },
+        {
             "kind": "DeploymentConfig",
             "apiVersion": "v1",
             "metadata": {
-                "name": "${ENVIRONMENT_NAMESPACE}-router",
+                "name": "${ENVIRONMENT_NAMESPACE}",
                 "creationTimestamp": null,
                 "labels": {
-                    "router": "${ENVIRONMENT_NAMESPACE}-router"
+                    "router": "${ENVIRONMENT_NAMESPACE}"
                 }
             },
             "spec": {
@@ -31,20 +62,20 @@
                 "replicas": 1,
                 "test": false,
                 "selector": {
-                    "router": "${ENVIRONMENT_NAMESPACE}-router"
+                    "router": "${ENVIRONMENT_NAMESPACE}"
                 },
                 "template": {
                     "metadata": {
                         "creationTimestamp": null,
                         "labels": {
-                            "router": "${ENVIRONMENT_NAMESPACE}-router"
+                            "router": "${ENVIRONMENT_NAMESPACE}"
                         }
                     },
                     "spec": {
                         "containers": [
                             {
                                 "name": "router",
-                                "image": "docker.io/philipgough/haproxy",
+                                "image": "docker.io/philipgough/haproxy:craig",
                                 "ports": [
                                     {
                                         "containerPort": 80
@@ -60,30 +91,12 @@
                                 ],
                                 "env": [
                                     {
-                                        "name": "ROUTER_EXTERNAL_HOST_HOSTNAME"
-                                    },
-                                    {
-                                        "name": "ROUTER_EXTERNAL_HOST_HTTPS_VSERVER"
-                                    },
-                                    {
-                                        "name": "ROUTER_EXTERNAL_HOST_HTTP_VSERVER"
-                                    },
-                                    {
                                         "name": "ROUTER_EXTERNAL_HOST_INSECURE",
                                         "value": "false"
                                     },
                                     {
-                                        "name": "ROUTER_EXTERNAL_HOST_PARTITION_PATH"
-                                    },
-                                    {
-                                        "name": "ROUTER_EXTERNAL_HOST_PASSWORD"
-                                    },
-                                    {
                                         "name": "ROUTER_EXTERNAL_HOST_PRIVKEY",
                                         "value": "/etc/secret-volume/router.pem"
-                                    },
-                                    {
-                                        "name": "ROUTER_EXTERNAL_HOST_USERNAME"
                                     },
                                     {
                                         "name": "ROUTER_SERVICE_HTTPS_PORT",
@@ -95,14 +108,15 @@
                                     },
                                     {
                                         "name": "ROUTER_SERVICE_NAME",
-                                        "value": "testrouter"
+                                        "value": "${ROUTER_SERVICE}"
                                     },
                                     {
                                         "name": "ROUTER_SERVICE_NAMESPACE",
                                         "value": "${ENVIRONMENT_NAMESPACE}"
                                     },
                                     {
-                                        "name": "ROUTER_SUBDOMAIN"
+                                        "name": "NAMESPACE",
+                                        "value": "${ENVIRONMENT_NAMESPACE}"
                                     },
                                     {
                                         "name": "STATS_PASSWORD",
@@ -115,38 +129,14 @@
                                     {
                                         "name": "STATS_USERNAME",
                                         "value": "admin"
-                                    },
-                                    {
-                                        "name": "NAMESPACE_LABELS",
-                                        "value": "${ENVIRONMENT_NAMESPACE}"
-                                    },
-                                    {
-                                        "name": "NAMESPACE",
-                                        "value": "${ENVIRONMENT_NAMESPACE}"
                                     }
                                 ],
                                 "resources": {},
-                                "livenessProbe": {
-                                    "httpGet": {
-                                        "path": "/healthz",
-                                        "port": 1936,
-                                        "host": "localhost"
-                                    },
-                                    "initialDelaySeconds": 10
-                                },
-                                "readinessProbe": {
-                                    "httpGet": {
-                                        "path": "/healthz",
-                                        "port": 1936,
-                                        "host": "localhost"
-                                    },
-                                    "initialDelaySeconds": 10
-                                },
-                                "imagePullPolicy": "IfNotPresent"
+                                "imagePullPolicy": "Always"
                             }
                         ],
-                        "serviceAccountName": "${ENVIRONMENT_USER}",
-                        "serviceAccount": "${ENVIRONMENT_USER}",
+                        "serviceAccountName": "router",
+                        "serviceAccount": "router",
                         "hostNetwork": false,
                         "securityContext": {}
                     }
@@ -158,10 +148,10 @@
             "kind": "Service",
             "apiVersion": "v1",
             "metadata": {
-                "name": "testrouter",
+                "name": "${ROUTER_SERVICE}",
                 "creationTimestamp": null,
                 "labels": {
-                    "router": "${ENVIRONMENT_NAMESPACE}-router"
+                    "router": "${ENVIRONMENT_NAMESPACE}"
                 }
             },
             "spec": {
@@ -184,7 +174,7 @@
                     }
                 ],
                 "selector": {
-                    "router": "${ENVIRONMENT_NAMESPACE}-router"
+                    "router": "${ENVIRONMENT_NAMESPACE}"
                 }
             },
             "status": {
@@ -196,13 +186,11 @@
         {
           "name": "ENVIRONMENT_NAMESPACE",
           "description": "The namespace the router should be limited to",
-          "value": "rhmap-rhmap-haproxy",
-          "required": true
+          "value": "rhmap-rhmap-rhmap-rhmap-myrouter"
         },
         {
-          "name": "ENVIRONMENT_USER",
-          "description": "The namespace the router should be limited to",
-          "value": "rhmap-user-haproxy",
+          "name": "ROUTER_SERVICE",
+          "value": "environment-router",
           "required": true
         }
       ]
