@@ -1,6 +1,0 @@
-our custom map will have 
-
-This is the data that is passed when creating the conf.map file 
-https://sourcegraph.com/github.com/openshift/origin@5d5c1e9221aea96f4dfce5638b356039568f1e13/-/blob/pkg/router/template/types.go#L19
-
-nodejsservicename nodejsservicename

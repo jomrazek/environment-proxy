@@ -7,16 +7,14 @@
             "kind": "ServiceAccount",
             "apiVersion": "v1",
             "metadata": {
-                "name": "router",
-                "creationTimestamp": null
+                "name": "router"
             }
         },
         {
             "kind": "ClusterRoleBinding",
             "apiVersion": "v1",
             "metadata": {
-                "name": "router-rhmap-rhmap-myrouter-role",
-                "creationTimestamp": null
+                "name": "rhmap-environment--proxy-role"
             },
             "userNames": [
                 "system:serviceaccount:${ENVIRONMENT_NAMESPACE}:router"
@@ -38,10 +36,9 @@
             "kind": "DeploymentConfig",
             "apiVersion": "v1",
             "metadata": {
-                "name": "${ENVIRONMENT_NAMESPACE}",
-                "creationTimestamp": null,
+                "name": "environment-proxy",
                 "labels": {
-                    "router": "${ENVIRONMENT_NAMESPACE}"
+                    "router": "environment-proxy"
                 }
             },
             "spec": {
@@ -62,20 +59,20 @@
                 "replicas": 1,
                 "test": false,
                 "selector": {
-                    "router": "${ENVIRONMENT_NAMESPACE}"
+                    "router": "environment-proxy"
                 },
                 "template": {
                     "metadata": {
-                        "creationTimestamp": null,
                         "labels": {
-                            "router": "${ENVIRONMENT_NAMESPACE}"
+                            "router": "environment-proxy"
                         }
                     },
                     "spec": {
                         "containers": [
                             {
                                 "name": "router",
-                                "image": "docker.io/philipgough/haproxy:craig",
+                                "image": "${IMAGE_VERSION}",
+                                "command": ["/usr/bin/openshift-router","--namespace=${ENVIRONMENT_NAMESPACE}"],
                                 "ports": [
                                     {
                                         "containerPort": 80
@@ -108,7 +105,7 @@
                                     },
                                     {
                                         "name": "ROUTER_SERVICE_NAME",
-                                        "value": "${ROUTER_SERVICE}"
+                                        "value": "environment-proxy"
                                     },
                                     {
                                         "name": "ROUTER_SERVICE_NAMESPACE",
@@ -120,7 +117,7 @@
                                     },
                                     {
                                         "name": "STATS_PASSWORD",
-                                        "value": "tw6O0BsOBf"
+                                        "value": "${STATS_PASSWORD}"
                                     },
                                     {
                                         "name": "STATS_PORT",
@@ -129,11 +126,29 @@
                                     {
                                         "name": "STATS_USERNAME",
                                         "value": "admin"
+                                    },
+                                    {
+                                      "name": "TEMPLATE_FILE",
+                                      "value": "/var/lib/haproxy/conf/custom/haproxy-config.template"
                                     }
+                                ],
+                                "volumeMounts": [
+                                  {
+                                    "name": "config-volume",
+                                    "mountPath": "/var/lib/haproxy/conf/custom"
+                                  }
                                 ],
                                 "resources": {},
                                 "imagePullPolicy": "Always"
                             }
+                        ],
+                        "volumes": [
+                          {
+                            "name": "config-volume",
+                            "configMap": {
+                              "name": "customrouter"
+                            }
+                          }
                         ],
                         "serviceAccountName": "router",
                         "serviceAccount": "router",
@@ -148,10 +163,9 @@
             "kind": "Service",
             "apiVersion": "v1",
             "metadata": {
-                "name": "${ROUTER_SERVICE}",
-                "creationTimestamp": null,
+                "name": "environment-proxy",
                 "labels": {
-                    "router": "${ENVIRONMENT_NAMESPACE}"
+                    "router": "environment-proxy"
                 }
             },
             "spec": {
@@ -174,24 +188,77 @@
                     }
                 ],
                 "selector": {
-                    "router": "${ENVIRONMENT_NAMESPACE}"
+                    "router": "environment-proxy"
                 }
             },
             "status": {
                 "loadBalancer": {}
             }
-        }
-    ],
-      "parameters": [
-        {
-          "name": "ENVIRONMENT_NAMESPACE",
-          "description": "The namespace the router should be limited to",
-          "value": "rhmap-rhmap-rhmap-rhmap-myrouter"
         },
         {
-          "name": "ROUTER_SERVICE",
-          "value": "environment-router",
-          "required": true
+            "kind": "Route",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "environment-proxy",
+                "namespace": "${ENVIRONMENT_NAMESPACE}",
+                "selfLink": "/oapi/v1/namespaces/${ENVIRONMENT_NAMESPACE}/routes/environment-proxy",
+                "labels": {
+                    "router": "environment-proxy"
+                },
+                "annotations": {
+                    "openshift.io/host.generated": "true"
+                }
+            },
+            "spec": {
+                "to": {
+                    "kind": "Service",
+                    "name": "environment-proxy",
+                    "weight": 100
+                },
+                "port": {
+                    "targetPort": "80-tcp"
+                }
+            },
+            "status": {
+                "ingress": [
+                    {
+                        "routerName": "router",
+                        "conditions": [
+                            {
+                                "type": "Admitted",
+                                "status": "True"
+                            }
+                        ]
+                    },
+                    {
+                        "routerName": "environment-proxy",
+                        "conditions": [
+                            {
+                                "type": "Admitted",
+                                "status": "True"
+                            }
+                        ]
+                    }
+                ]
+            }
         }
-      ]
+    ],
+    "parameters": [
+      {
+        "name": "ENVIRONMENT_NAMESPACE",
+        "description": "The namespace the router should be limited to",
+        "required": true
+      },
+      {
+        "name": "STATS_PASSWORD",
+        "description": "The password for the HAProxy stats service",
+        "generate": "expression",
+        "from": "[a-zA-Z0-9]{15}"
+      },
+       {
+        "name": "IMAGE_VERSION",
+        "description": "The OpenShift router image version which should be deployed",
+        "value": "openshift/origin-haproxy-router:v1.3.1"
+      }
+  ]
 }
