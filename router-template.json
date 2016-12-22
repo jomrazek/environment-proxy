@@ -136,6 +136,10 @@
                                   {
                                     "name": "config-volume",
                                     "mountPath": "/var/lib/haproxy/conf/custom"
+                                  },
+                                  {
+                                    "name": "logger",
+                                    "mountPath": "/dev/log"
                                   }
                                 ],
                                 "resources": {},
@@ -148,6 +152,10 @@
                             "configMap": {
                               "name": "customrouter"
                             }
+                          },
+                          {
+                            "name": "logger",
+                            "emptyDir": {}
                           }
                         ],
                         "serviceAccountName": "router",

@@ -8,6 +8,7 @@
 global
   # maxconn 4096
   daemon
+  log logger:514 local0
   ca-base /etc/ssl
   crt-base /etc/ssl
   stats socket /var/lib/haproxy/run/haproxy.sock mode 600 level admin
@@ -87,6 +88,8 @@ listen stats :1936
 frontend public
   bind :{{env "ROUTER_SERVICE_HTTP_PORT" "80"}}
   mode http
+  option httplog
+  log global
   tcp-request inspect-delay 5s
   tcp-request content accept if HTTP
 
@@ -129,6 +132,7 @@ backend openshift_default
 # Plain http backend but request is TLS, terminated at edge
 backend be_edge_http_{{$cfgIdx}}
   mode http
+  log global
   option redispatch
   option forwardfor
   balance leastconn
