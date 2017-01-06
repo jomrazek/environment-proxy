@@ -14,4 +14,4 @@ For example :
 
 ```
 sudo oc new-app -f router-template.json -n rhmap-rhmap-myrouter --param=ENVIRONMENT_NAMESPACE=rhmap-rhmap-myrouter
-
+```

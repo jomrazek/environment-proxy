@@ -106,7 +106,7 @@ frontend public_ssl
   tcp-request  inspect-delay 5s
   tcp-request content accept if { req_ssl_hello_type 1 }
 
-  use_backend be_edge_http_%[base,map_beg(/var/lib/haproxy/conf/os_edge_http_be.map)]
+  use_backend be_edge_http_%[path,map_beg(/var/lib/haproxy/conf/os_edge_http_be.map)]
   default_backend openshift_default
 
 
@@ -144,9 +144,11 @@ backend be_edge_http_{{$cfgIdx}}
   cookie {{$cfg.RoutingKeyName}} insert indirect nocache httponly
   {{ end }}
   http-request set-header Forwarded for=%[src];host=%[req.hdr(host)];proto=%[req.hdr(X-Forwarded-Proto)]
-  reqirep ^([^\ :]*)\ {{$cfg.Path}}/(.*)  \1\ /\2
-  reqirep ^([^\ :]*)\ {{$cfg.Path}}(.*)  \1\ /\2
-  reqadd X-Script-Name:\ {{$cfg.Path}}
+  {{ with $value := index $cfg.Annotations "subdomain"}}
+  reqirep ^([^\ :]*)\ /{{$value}}/(.*)  \1\ /\2
+  reqirep ^([^\ :]*)\ /{{$value}}(.*)  \1\ /\2
+  reqadd X-Script-Name:\ /{{$value}}
+ {{ end }}
     {{ range $serviceUnitName, $weight := $cfg.ServiceUnitNames }}
       {{ if ne $weight 0 }}
         {{ with $serviceUnit := index $.ServiceUnits $serviceUnitName }}
@@ -239,7 +241,9 @@ backend be_tcp_{{$cfgIdx}}
 {{ define "/var/lib/haproxy/conf/os_edge_http_be.map" }}
 {{ range $idx, $cfg := .State }}
   {{ if and (ne $cfg.Host "") (eq $cfg.TLSTermination "edge")}}
-{{ $cfg.Path }} {{$idx}}
+  {{ with $value := index $cfg.Annotations "subdomain"}}
+/{{$value}} {{$idx}}
+ {{ end }}
   {{ end }}
 {{ end }}
 {{ end }}{{/* end edge http host map template */}}
