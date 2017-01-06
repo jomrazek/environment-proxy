@@ -14,7 +14,7 @@
             "kind": "ClusterRoleBinding",
             "apiVersion": "v1",
             "metadata": {
-                "name": "rhmap-environment--proxy-role"
+                "name": "${ENVIRONMENT_NAMESPACE}-proxy-role"
             },
             "userNames": [
                 "system:serviceaccount:${ENVIRONMENT_NAMESPACE}:router"
@@ -204,9 +204,6 @@
                 "selfLink": "/oapi/v1/namespaces/${ENVIRONMENT_NAMESPACE}/routes/environment-proxy",
                 "labels": {
                     "router": "environment-proxy"
-                },
-                "annotations": {
-                    "openshift.io/host.generated": "true"
                 }
             },
             "spec": {
@@ -216,20 +213,14 @@
                     "weight": 100
                 },
                 "port": {
-                    "targetPort": "80-tcp"
+                    "targetPort": "443-tcp"
+                },
+                "tls": {
+                    "termination": "edge"
                 }
             },
             "status": {
                 "ingress": [
-                    {
-                        "routerName": "router",
-                        "conditions": [
-                            {
-                                "type": "Admitted",
-                                "status": "True"
-                            }
-                        ]
-                    },
                     {
                         "routerName": "environment-proxy",
                         "conditions": [
