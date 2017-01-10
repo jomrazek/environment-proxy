@@ -207,6 +207,7 @@
                 }
             },
             "spec": {
+                "host": "${ENVIRONMENT}.${DOMAIN}",
                 "to": {
                     "kind": "Service",
                     "name": "environment-proxy",
@@ -238,6 +239,16 @@
       {
         "name": "ENVIRONMENT_NAMESPACE",
         "description": "The namespace the router should be limited to",
+        "required": true
+      },
+      {
+        "name": "DOMAIN",
+        "description": "The doamin name to attach the route to",
+        "required": true
+      },
+      {
+        "name": "ENVIRONMENT",
+        "description": "The environment name created via the RHMAP studio",
         "required": true
       },
       {
